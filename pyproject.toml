@@ -1,0 +1,19 @@
+[project]
+name = "django-rest-aiogram"
+version = "0.1.0"
+description = "Django + Aiogram ToDo List"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.25.0",
+    "aiogram-dialog>=2.4.0",
+    "aiohttp>=3.9.0",
+    "celery>=5.6.2",
+    "django>=6.0.2",
+    "django-filter>=25.2",
+    "djangorestframework>=3.16.1",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.0.0",
+    "redis>=7.2.0",
+]

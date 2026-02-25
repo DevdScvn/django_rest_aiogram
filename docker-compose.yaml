@@ -1,0 +1,92 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: todo
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5490:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d todo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+
+  django:
+    build: .
+    command: sh -c "python backend/django_aiogram/manage.py migrate && python backend/django_aiogram/manage.py runserver 0.0.0.0:8000"
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_NAME: todo
+      DB_USER: app
+      DB_PASSWORD: password
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: django_aiogram.settings
+      ALLOWED_HOSTS: "*"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery_worker:
+    build: .
+    command: python -m celery -A django_aiogram worker -l info
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_NAME: todo
+      DB_USER: app
+      DB_PASSWORD: password
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: django_aiogram.settings
+    volumes:
+      - .:/app
+    depends_on:
+      - django
+      - redis
+
+  celery_beat:
+    build: .
+    command: python -m celery -A django_aiogram beat -l info
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_NAME: todo
+      DB_USER: app
+      DB_PASSWORD: password
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: django_aiogram.settings
+    volumes:
+      - .:/app
+    depends_on:
+      - django
+      - redis
+
+  telegram_bot:
+    build: .
+    command: python -m bot.main
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      DJANGO_API_URL: http://django:8000
+    volumes:
+      - .:/app
+    depends_on:
+      - django
+
+volumes:
+  postgres_data:
