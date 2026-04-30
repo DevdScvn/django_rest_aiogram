@@ -126,7 +126,7 @@ git clone https://github.com/DevdScvn/django_rest_aiogram
 ```
 
 ```bash
-cd aiogram_django_rest_v2
+cd aiogram_django_rest_v2z
 ```
 
 ### 3. Создайте виртуальное окружение и установите зависимости
@@ -237,3 +237,4 @@ REST API доступен по адресу `http://localhost:8000/api/`:
 | GET, PUT, DELETE | `/api/tasks/{id}/` | Одна задача |
 | GET, POST | `/api/categories/` | Категории |
 | POST | `/api/auth/telegram/` | Регистрация/аутентификация по Telegram ID |
+   
